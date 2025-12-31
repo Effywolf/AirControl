@@ -27,11 +27,11 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
     // Gesture state tracking
     nonisolated(unsafe) private var lastGestureTime: Date?
     nonisolated(unsafe) private var gestureCooldown: TimeInterval = 2.0 // Prevent re-triggering for 2 seconds
-    nonisolated(unsafe) private var gestureConfidenceThreshold: Float = 0.8 // Higher confidence = fewer false positives
+    nonisolated(unsafe) private var gestureConfidenceThreshold: Float = 0.6 // Lowered from 0.8 for better detection
 
     // Gesture confirmation tracking
     nonisolated(unsafe) private var gestureHoldFrames: [HandGesture: Int] = [:]
-    private let requiredHoldFrames = 4 // Must detect gesture for 4 consecutive frames (more stable)
+    private let requiredHoldFrames = 2 // Reduced from 4 for faster detection
 
     // Swipe gesture tracking
     nonisolated(unsafe) private var handPositionHistory: [(position: CGPoint, timestamp: Date)] = []
@@ -126,6 +126,11 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return nil
         }
 
+        // Debug: Print coordinate info
+        if debugMode, let wrist = handPoints[.wrist], let indexTip = handPoints[.indexTip] {
+            print("🔍 Wrist Y: \(wrist.location.y), IndexTip Y: \(indexTip.location.y)")
+        }
+
         // Check gestures in priority order
         if let swipeGesture = detectSwipe(handPoints: handPoints) {
             return swipeGesture
@@ -156,6 +161,9 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
               let ringTip = handPoints[.ringTip],
               let littleTip = handPoints[.littleTip],
               wrist.confidence > gestureConfidenceThreshold else {
+            if debugMode {
+                print("❌ Open Palm: Failed confidence check")
+            }
             return false
         }
 
@@ -163,14 +171,19 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         let fingertips = [thumbTip, indexTip, middleTip, ringTip, littleTip]
 
         // Check if all fingers are extended (tips above wrist)
+        // Vision coordinates: Y increases upward (0=bottom, 1=top)
         let allExtended = fingertips.allSatisfy { tip in
             tip.confidence > gestureConfidenceThreshold &&
-            tip.location.y > wrist.location.y
+            tip.location.y > wrist.location.y // Tips should be higher up (larger Y)
         }
 
         // Check fingers are spread out (distance between adjacent fingers)
         let fingerSpread = distance(indexTip.location, middleTip.location) > 0.05 &&
                           distance(middleTip.location, ringTip.location) > 0.05
+
+        if debugMode {
+            print("🖐 Open Palm: extended=\(allExtended), spread=\(fingerSpread)")
+        }
 
         return allExtended && fingerSpread
     }
@@ -188,13 +201,18 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return nil
         }
 
-        // Check if other fingers are curled (MCPs are higher than tips would be)
+        // Check if other fingers are curled (tips below MCPs = curled)
+        // Vision coordinates: Y increases upward, so curled fingers have tip.y < MCP.y
         let indexCurled = (handPoints[.indexTip]?.location.y ?? 0) < indexMCP.location.y
         let middleCurled = (handPoints[.middleTip]?.location.y ?? 0) < middleMCP.location.y
         let ringCurled = (handPoints[.ringTip]?.location.y ?? 0) < ringMCP.location.y
         let littleCurled = (handPoints[.littleTip]?.location.y ?? 0) < littleMCP.location.y
 
         let fingersCurled = indexCurled && middleCurled && ringCurled && littleCurled
+
+        if debugMode {
+            print("👍 Thumbs: curled=[\(indexCurled), \(middleCurled), \(ringCurled), \(littleCurled)]")
+        }
 
         if !fingersCurled {
             return nil
@@ -203,16 +221,27 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         // Check thumb orientation
         let thumbExtended = distance(thumbTip.location, thumbIP.location) > 0.05
 
+        if debugMode {
+            print("👍 Thumb extended: \(thumbExtended)")
+        }
+
         if !thumbExtended {
             return nil
         }
 
         // Determine if thumbs up or down based on thumb position relative to hand
+        // Vision coordinates: Y increases upward (0=bottom, 1=top)
         let averageMCPY = (indexMCP.location.y + middleMCP.location.y + ringMCP.location.y + littleMCP.location.y) / 4
 
+        if debugMode {
+            print("👍 Thumb Y: \(thumbTip.location.y), Avg MCP Y: \(averageMCPY)")
+        }
+
         if thumbTip.location.y > averageMCPY + 0.1 {
+            // Thumb is above hand center (larger Y) = thumbs up
             return .thumbsUp
         } else if thumbTip.location.y < averageMCPY - 0.1 {
+            // Thumb is below hand center (smaller Y) = thumbs down
             return .thumbsDown
         }
 
@@ -281,10 +310,10 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         let pinchDistance = distance(thumbTip.location, indexTip.location)
 
         // Also check that the fingers are actually extended toward each other
-        let thumbExtended = distance(thumbTip.location, thumbIP.location) > 0.04
-        let indexExtended = distance(indexTip.location, indexDIP.location) > 0.04
+        let thumbExtended = distance(thumbTip.location, thumbIP.location) > 0.03
+        let indexExtended = distance(indexTip.location, indexDIP.location) > 0.03
 
-        return pinchDistance < 0.04 && thumbExtended && indexExtended // Stricter threshold
+        return pinchDistance < 0.07 && thumbExtended && indexExtended // Relaxed threshold for easier detection
     }
 
     // MARK: - Helper Functions
