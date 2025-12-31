@@ -11,6 +11,17 @@ class AudioControlService {
 
 	var volumeStep: Float = 0.1
 
+	// Check if accessibility permissions are granted
+	func checkAccessibilityPermissions() -> Bool {
+		let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
+		return AXIsProcessTrustedWithOptions(options as CFDictionary)
+	}
+
+	// Check accessibility without prompting
+	private func hasAccessibilityPermissions() -> Bool {
+		return AXIsProcessTrusted()
+	}
+
 	func getVolume() -> Float {
 		do {
 			return try Sound.output.readVolume()
@@ -58,10 +69,18 @@ class AudioControlService {
 	}
 	
 	func playPause() {
+		guard hasAccessibilityPermissions() else {
+			print("⚠️ Accessibility permissions required for play/pause control")
+			return
+		}
 		sendMediaKey(keyCode: NX_KEYTYPE_PLAY)
 	}
-	
+
 	func skipTrack(direction: TrackDirection) {
+		guard hasAccessibilityPermissions() else {
+			print("⚠️ Accessibility permissions required for track control")
+			return
+		}
 		switch direction {
 		case .forward:
 			sendMediaKey(keyCode: NX_KEYTYPE_NEXT)
@@ -69,28 +88,50 @@ class AudioControlService {
 			sendMediaKey(keyCode: NX_KEYTYPE_PREVIOUS)
 		}
 	}
-	
+
 	func nextTrack() {
 		skipTrack(direction: .forward)
 	}
-	
+
 	func previousTrack() {
 		skipTrack(direction: .backward)
 	}
 	
 	private func sendMediaKey(keyCode: Int32) {
-		let flags: UInt64 = 0xa00
-		
-		if let eventDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(keyCode), keyDown: true) {
-			eventDown.flags = CGEventFlags(rawValue: flags)
-			eventDown.post(tap: .cghidEventTap)
+		// Use NSEvent for proper media key handling
+		let data1 = Int((keyCode << 16) | (0xa << 8))
+
+		// Key down event
+		if let eventDown = NSEvent.otherEvent(
+			with: .systemDefined,
+			location: NSPoint.zero,
+			modifierFlags: NSEvent.ModifierFlags(rawValue: 0xa00),
+			timestamp: 0,
+			windowNumber: 0,
+			context: nil,
+			subtype: 8,
+			data1: data1,
+			data2: -1
+		) {
+			eventDown.cgEvent?.post(tap: .cghidEventTap)
 		}
-		
+
+		// Small delay between key down and up
 		usleep(50000)
-		
-		if let eventUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(keyCode), keyDown: false) {
-			eventUp.flags = CGEventFlags(rawValue: flags)
-			eventUp.post(tap: .cghidEventTap)
+
+		// Key up event
+		if let eventUp = NSEvent.otherEvent(
+			with: .systemDefined,
+			location: NSPoint.zero,
+			modifierFlags: NSEvent.ModifierFlags(rawValue: 0xb00),
+			timestamp: 0,
+			windowNumber: 0,
+			context: nil,
+			subtype: 8,
+			data1: data1,
+			data2: -1
+		) {
+			eventUp.cgEvent?.post(tap: .cghidEventTap)
 		}
 	}
 }

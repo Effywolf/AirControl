@@ -38,6 +38,14 @@ class GestureController {
     // MARK: - Control
 
     func start() {
+        // Check accessibility permissions first
+        if !audioService.checkAccessibilityPermissions() {
+            print("⚠️ Accessibility permissions not granted. Please grant permissions in System Settings > Privacy & Security > Accessibility")
+            print("⚠️ Media controls (play/pause, next/previous track) will not work without these permissions.")
+            print("⚠️ Volume controls will still work.")
+            // Continue anyway - volume controls will still work
+        }
+
         cameraService.requestCameraPermission { [weak self] granted in
             guard granted, let self = self else {
                 print("Camera permission denied")
