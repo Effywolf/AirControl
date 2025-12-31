@@ -5,7 +5,7 @@
 //  Created by Effy on 2025-12-30.
 //
 
-import Vision
+@preconcurrency import Vision
 import CoreImage
 import Combine
 import Foundation
@@ -14,27 +14,27 @@ protocol GestureRecognitionDelegate: AnyObject {
     func gestureRecognized(_ gesture: HandGesture)
 }
 
-class GestureRecognitionService: NSObject {
+class GestureRecognitionService: NSObject, @unchecked Sendable {
 
-    weak var delegate: GestureRecognitionDelegate?
+    nonisolated(unsafe) weak var delegate: GestureRecognitionDelegate?
 
-    private var handPoseRequest: VNDetectHumanHandPoseRequest?
+    nonisolated(unsafe) private var handPoseRequest: VNDetectHumanHandPoseRequest?
     private let requestQueue = DispatchQueue(label: "com.cameratest.gesture.recognition")
 
     // Debug mode
-    var debugMode: Bool = false
+    nonisolated(unsafe) var debugMode: Bool = false
 
     // Gesture state tracking
-    private var lastGestureTime: Date?
-    private var gestureCooldown: TimeInterval = 2.0 // Prevent re-triggering for 2 seconds
-    private var gestureConfidenceThreshold: Float = 0.8 // Higher confidence = fewer false positives
+    nonisolated(unsafe) private var lastGestureTime: Date?
+    nonisolated(unsafe) private var gestureCooldown: TimeInterval = 2.0 // Prevent re-triggering for 2 seconds
+    nonisolated(unsafe) private var gestureConfidenceThreshold: Float = 0.8 // Higher confidence = fewer false positives
 
     // Gesture confirmation tracking
-    private var gestureHoldFrames: [HandGesture: Int] = [:]
+    nonisolated(unsafe) private var gestureHoldFrames: [HandGesture: Int] = [:]
     private let requiredHoldFrames = 4 // Must detect gesture for 4 consecutive frames (more stable)
 
     // Swipe gesture tracking
-    private var handPositionHistory: [(position: CGPoint, timestamp: Date)] = []
+    nonisolated(unsafe) private var handPositionHistory: [(position: CGPoint, timestamp: Date)] = []
     private let maxHistoryCount = 10
     private let swipeDistanceThreshold: CGFloat = 0.20 // 20% of screen width (more movement needed)
     private let swipeTimeWindow: TimeInterval = 0.6 // Time window for swipe
@@ -53,7 +53,7 @@ class GestureRecognitionService: NSObject {
 
     // MARK: - Process Video Frame
 
-    func processVideoFrame(_ sampleBuffer: CMSampleBuffer) {
+    nonisolated func processVideoFrame(_ sampleBuffer: CMSampleBuffer) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
               let request = handPoseRequest else {
             return

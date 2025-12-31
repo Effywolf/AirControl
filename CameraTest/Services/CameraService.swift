@@ -9,13 +9,13 @@ import AVFoundation
 import Combine
 
 protocol CameraServiceDelegate: AnyObject {
-    func cameraService(_ service: CameraService, didOutput sampleBuffer: CMSampleBuffer)
-    func cameraService(_ service: CameraService, didFailWithError error: Error)
+    nonisolated func cameraService(_ service: CameraService, didOutput sampleBuffer: CMSampleBuffer)
+    nonisolated func cameraService(_ service: CameraService, didFailWithError error: Error)
 }
 
 class CameraService: NSObject, @unchecked Sendable {
 
-    weak var delegate: CameraServiceDelegate?
+    nonisolated(unsafe) weak var delegate: CameraServiceDelegate?
 
     private let captureSession = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "com.cameratest.camera.session")
@@ -131,10 +131,10 @@ class CameraService: NSObject, @unchecked Sendable {
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
 
 extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
-	func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+	nonisolated func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 		delegate?.cameraService(self, didOutput: sampleBuffer)
 	}
-	
-	func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+
+	nonisolated func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 	}
 }

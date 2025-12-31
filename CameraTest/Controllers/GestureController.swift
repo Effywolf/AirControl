@@ -108,12 +108,12 @@ class GestureController {
 // MARK: - CameraServiceDelegate
 
 extension GestureController: CameraServiceDelegate {
-    func cameraService(_ service: CameraService, didOutput sampleBuffer: CMSampleBuffer) {
+    nonisolated func cameraService(_ service: CameraService, didOutput sampleBuffer: CMSampleBuffer) {
         // Pass video frames to gesture recognition
         gestureService.processVideoFrame(sampleBuffer)
     }
 
-    func cameraService(_ service: CameraService, didFailWithError error: Error) {
+    nonisolated func cameraService(_ service: CameraService, didFailWithError error: Error) {
         print("Camera error: \(error)")
     }
 }
