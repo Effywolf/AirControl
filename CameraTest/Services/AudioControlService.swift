@@ -12,11 +12,20 @@ class AudioControlService {
 	var volumeStep: Float = 0.1
 
 	func getVolume() -> Float {
-		return Sound.output.volume
+		do {
+			return try Sound.output.readVolume()
+		} catch {
+			print("Failed to get volume: \(error)")
+			return 0
+		}
 	}
 
 	func setVolume(_ volume: Float) {
-		Sound.output.volume = max(0, min(1, volume))
+		do {
+			try Sound.output.setVolume(max(0, min(1, volume)))
+		} catch {
+			print("Failed to set volume: \(error)")
+		}
 	}
 
 	func increaseVolume() {
@@ -28,11 +37,20 @@ class AudioControlService {
 	}
 
 	func getMuted() -> Bool {
-		return Sound.output.isMuted
+		do {
+			return try Sound.output.readMute()
+		} catch {
+			print("Failed to get muted state: \(error)")
+			return false
+		}
 	}
 
 	func setMuted(_ muted: Bool) {
-		Sound.output.isMuted = muted
+		do {
+			try Sound.output.mute(muted)
+		} catch {
+			print("Failed to set muted state: \(error)")
+		}
 	}
 
 	func toggleMute() {
