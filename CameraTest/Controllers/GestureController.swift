@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreMedia
+import CoreImage
 
 class GestureController {
 
@@ -108,14 +109,13 @@ class GestureController {
 // MARK: - CameraServiceDelegate
 
 extension GestureController: CameraServiceDelegate {
-    nonisolated func cameraService(_ service: CameraService, didOutput sampleBuffer: CMSampleBuffer) {
-        // Pass video frames to gesture recognition
-        gestureService.processVideoFrame(sampleBuffer)
-    }
-
-    nonisolated func cameraService(_ service: CameraService, didFailWithError error: Error) {
-        print("Camera error: \(error)")
-    }
+	nonisolated func cameraService(_ service: CameraService, didOutput pixelBuffer: CVPixelBuffer) {
+		gestureService.processVideoFrame(pixelBuffer)
+	}
+	
+	nonisolated func cameraService(_ service: CameraService, didFailWithError error: Error) {
+		print("Camera error: \(error)")
+	}
 }
 
 // MARK: - GestureRecognitionDelegate

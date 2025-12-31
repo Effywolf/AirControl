@@ -9,102 +9,90 @@ import AppKit
 import SwiftUI
 
 class HUDNotification {
-
-    private var window: NSWindow?
-    private var dismissTimer: Timer?
-    private let displayDuration: TimeInterval = 1.5
-    private var isShowing = false
-    private let hudQueue = DispatchQueue(label: "com.cameratest.hud", qos: .userInteractive)
-
-    static let shared = HUDNotification()
-
-    private init() {}
-
-    // MARK: - Show HUD
-
-    func show(gesture: HandGesture, message: String, volume: Float? = nil) {
-        hudQueue.async { [weak self] in
-            guard let self = self else { return }
-
-            // Ensure we're not already showing
-            DispatchQueue.main.sync {
-                self.dismissTimer?.invalidate()
-                self.window?.close()
-                self.window = nil
-                self.isShowing = false
-            }
-
-            // Small delay to ensure cleanup
-            usleep(10000) // 10ms
-
-            DispatchQueue.main.async {
-                self.displayHUD(gesture: gesture, message: message, volume: volume)
-                self.scheduleAutoDismiss()
-            }
-        }
-    }
-
-    private func displayHUD(gesture: HandGesture, message: String, volume: Float?) {
-        guard !isShowing else { return }
-        isShowing = true
-
-        // Create HUD window
-        let hudWindow = createHUDWindow()
-
-        // Create content view
-        let contentView = HUDContentView(
-            icon: gesture.icon,
-            message: message,
-            volume: volume
-        )
-
-        hudWindow.contentView = NSHostingView(rootView: contentView)
-        hudWindow.orderFrontRegardless()
-
-        self.window = hudWindow
-    }
-
-    private func createHUDWindow() -> NSWindow {
-        let screenFrame = NSScreen.main?.frame ?? .zero
-        let windowSize = CGSize(width: 200, height: 200)
-        let windowOrigin = CGPoint(
-            x: screenFrame.midX - windowSize.width / 2,
-            y: screenFrame.midY - windowSize.height / 2
-        )
-
-        let window = NSWindow(
-            contentRect: NSRect(origin: windowOrigin, size: windowSize),
-            styleMask: [.borderless],
-            backing: .buffered,
-            defer: false
-        )
-
-        window.isOpaque = false
-        window.backgroundColor = .clear
-        window.level = .floating
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
-        window.ignoresMouseEvents = true
-        window.hasShadow = true
-
-        return window
-    }
-
-    private func scheduleAutoDismiss() {
-        dismissTimer = Timer.scheduledTimer(withTimeInterval: displayDuration, repeats: false) { [weak self] _ in
-            self?.dismiss()
-        }
-    }
-
-    func dismiss() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.dismissTimer?.invalidate()
-            self.dismissTimer = nil
-            self.window?.close()
-            self.window = nil
-            self.isShowing = false
-        }
-    }
+	
+	private var window: NSWindow?
+	private var hostingView: NSHostingView<HUDContentView>?
+	private var dismissTimer: Timer?
+	private let displayDuration: TimeInterval = 1.5
+	
+	static let shared = HUDNotification()
+	
+	private init() {
+		setupWindow()
+	}
+	
+	// MARK: - Setup
+	
+	private func setupWindow() {
+		let screenFrame = NSScreen.main?.frame ?? .zero
+		let windowSize = CGSize(width: 200, height: 200)
+		let windowOrigin = CGPoint(
+			x: screenFrame.midX - windowSize.width / 2,
+			y: screenFrame.midY - windowSize.height / 2
+		)
+		
+		let window = NSWindow(
+			contentRect: NSRect(origin: windowOrigin, size: windowSize),
+			styleMask: [.borderless],
+			backing: .buffered,
+			defer: false
+		)
+		
+		window.isOpaque = false
+		window.backgroundColor = .clear
+		window.level = .floating
+		window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+		window.ignoresMouseEvents = true
+		window.hasShadow = true
+		
+		let contentView = HUDContentView(icon: "hand.raised", message: "", volume: nil)
+		let hosting = NSHostingView(rootView: contentView)
+		window.contentView = hosting
+		
+		self.window = window
+		self.hostingView = hosting
+	}
+	
+	// MARK: - Show HUD
+	
+	func show(gesture: HandGesture, message: String, volume: Float? = nil) {
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self else { return }
+			
+			self.dismissTimer?.invalidate()
+			self.dismissTimer = nil
+			
+			// Update content instead of recreating window
+			let contentView = HUDContentView(
+				icon: gesture.icon,
+				message: message,
+				volume: volume
+			)
+			self.hostingView?.rootView = contentView
+			
+			// Show window
+			self.window?.orderFrontRegardless()
+			
+			self.scheduleAutoDismiss()
+		}
+	}
+	
+	private func scheduleAutoDismiss() {
+		dismissTimer = Timer.scheduledTimer(withTimeInterval: displayDuration, repeats: false) { [weak self] _ in
+			self?.dismiss()
+		}
+	}
+	
+	func dismiss() {
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self else { return }
+			
+			self.dismissTimer?.invalidate()
+			self.dismissTimer = nil
+			
+			self.window?.orderOut(nil) 
+		}
+	}
 }
 
 // MARK: - HUD Content View

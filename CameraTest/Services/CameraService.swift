@@ -7,10 +7,11 @@
 
 import AVFoundation
 import Combine
+import CoreImage
 
 protocol CameraServiceDelegate: AnyObject {
-    nonisolated func cameraService(_ service: CameraService, didOutput sampleBuffer: CMSampleBuffer)
-    nonisolated func cameraService(_ service: CameraService, didFailWithError error: Error)
+	nonisolated func cameraService(_ service: CameraService, didOutput pixelBuffer: CVPixelBuffer)
+	nonisolated func cameraService(_ service: CameraService, didFailWithError error: Error)
 }
 
 class CameraService: NSObject, @unchecked Sendable {
@@ -131,10 +132,10 @@ class CameraService: NSObject, @unchecked Sendable {
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
 
 extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
-	nonisolated func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-		delegate?.cameraService(self, didOutput: sampleBuffer)
-	}
-
-	nonisolated func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+	nonisolated func captureOutput(_ output: AVCaptureOutput,
+								   didOutput sampleBuffer: CMSampleBuffer,
+								   from connection: AVCaptureConnection) {
+		guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+		delegate?.cameraService(self, didOutput: pixelBuffer)
 	}
 }

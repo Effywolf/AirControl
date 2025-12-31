@@ -53,23 +53,22 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
 
     // MARK: - Process Video Frame
 
-    nonisolated func processVideoFrame(_ sampleBuffer: CMSampleBuffer) {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-              let request = handPoseRequest else {
-            return
-        }
-
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-
-        requestQueue.async { [weak self] in
-            do {
-                try handler.perform([request])
-                self?.handleHandPoseResults(request.results)
-            } catch {
-                print("Hand pose detection failed: \(error)")
-            }
-        }
-    }
+	nonisolated func processVideoFrame(_ pixelBuffer: CVPixelBuffer) {
+		guard let request = handPoseRequest else {
+			return
+		}
+		
+		let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+		
+		requestQueue.async { [weak self] in
+			do {
+				try handler.perform([request])
+				self?.handleHandPoseResults(request.results)
+			} catch {
+				print("Hand pose detection failed: \(error)")
+			}
+		}
+	}
 
     // MARK: - Handle Results
 
