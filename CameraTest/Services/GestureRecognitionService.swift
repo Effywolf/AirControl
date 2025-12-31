@@ -105,6 +105,11 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
                 lastGestureTime = Date()
                 gestureHoldFrames.removeAll()
 
+                // Clear swipe history when swipe gesture is confirmed
+                if gesture == .swipeLeft || gesture == .swipeRight {
+                    handPositionHistory.removeAll()
+                }
+
                 if debugMode {
                     print("✅ Gesture confirmed: \(gesture.rawValue)")
                 }
@@ -282,7 +287,8 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
 
         // Detect swipe direction
         if abs(horizontalDistance) > swipeDistanceThreshold {
-            handPositionHistory.removeAll() // Clear history after detecting swipe
+            // Don't clear history here - let it be cleared when gesture is confirmed
+            // or when hand is no longer detected
 
             if horizontalDistance > 0 {
                 return .swipeRight
