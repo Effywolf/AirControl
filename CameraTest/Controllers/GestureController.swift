@@ -71,38 +71,38 @@ class GestureController {
 
     // MARK: - Gesture Handling
 
-    private func handleGesture(_ gesture: HandGesture) {
-        print("Gesture recognized: \(gesture.rawValue)")
-
-        switch gesture {
-        case .openPalm:
-            audioService.playPause()
-            hudNotification.show(gesture: gesture, message: "Play/Pause")
-
-        case .thumbsUp:
-            audioService.increaseVolume()
-            let volume = audioService.getCurrentVolume()
-            hudNotification.show(gesture: gesture, message: "Volume", volume: volume)
-
-        case .thumbsDown:
-            audioService.decreaseVolume()
-            let volume = audioService.getCurrentVolume()
-            hudNotification.show(gesture: gesture, message: "Volume", volume: volume)
-
-        case .swipeRight:
-            audioService.nextTrack()
-            hudNotification.show(gesture: gesture, message: "Next Track")
-
-        case .swipeLeft:
-            audioService.previousTrack()
-            hudNotification.show(gesture: gesture, message: "Previous Track")
-
-        case .pinch:
-            audioService.toggleMute()
-            let isMuted = audioService.getCurrentVolume() == 0
-            hudNotification.show(gesture: gesture, message: isMuted ? "Muted" : "Unmuted")
-        }
-    }
+	private func handleGesture(_ gesture: HandGesture) {
+		print("Gesture recognized: \(gesture.rawValue)")
+		
+		switch gesture {
+		case .openPalm:
+			audioService.playPause()
+			hudNotification.show(gesture: gesture, message: "Play/Pause")
+			
+		case .thumbsUp:
+			audioService.increaseVolume()
+			let volume = audioService.getVolume()
+			hudNotification.show(gesture: gesture, message: "Volume", volume: volume)
+			
+		case .thumbsDown:
+			audioService.decreaseVolume()
+			let volume = audioService.getVolume()
+			hudNotification.show(gesture: gesture, message: "Volume", volume: volume)
+			
+		case .swipeRight:
+			audioService.nextTrack()
+			hudNotification.show(gesture: gesture, message: "Next Track")
+			
+		case .swipeLeft:
+			audioService.previousTrack()
+			hudNotification.show(gesture: gesture, message: "Previous Track")
+			
+		case .pinch:
+			audioService.toggleMute()
+			let isMuted = audioService.getMuted()
+			hudNotification.show(gesture: gesture, message: isMuted ? "Muted" : "Unmuted")
+		}
+	}
 }
 
 // MARK: - CameraServiceDelegate

@@ -13,7 +13,7 @@ protocol CameraServiceDelegate: AnyObject {
     func cameraService(_ service: CameraService, didFailWithError error: Error)
 }
 
-class CameraService: NSObject {
+class CameraService: NSObject, @unchecked Sendable {
 
     weak var delegate: CameraServiceDelegate?
 
@@ -131,11 +131,10 @@ class CameraService: NSObject {
 // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
 
 extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        delegate?.cameraService(self, didOutput: sampleBuffer)
-    }
-
-    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        // Frame was dropped - can log this for debugging if needed
-    }
+	func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+		delegate?.cameraService(self, didOutput: sampleBuffer)
+	}
+	
+	func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+	}
 }

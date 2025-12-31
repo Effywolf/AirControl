@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BC59C87F2F04BB8E005EB613 /* ISSoundAdditions in Frameworks */ = {isa = PBXBuildFile; productRef = BC59C87E2F04BB8E005EB613 /* ISSoundAdditions */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BC53CAA22F04428800803ED7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC59C87F2F04BB8E005EB613 /* ISSoundAdditions in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 				BC53CA942F04428600803ED7 /* CameraTest */,
 				BC53CAA42F04428800803ED7 /* CameraTestTests */,
 				BC53CAAE2F04428800803ED7 /* CameraTestUITests */,
+				BC59C87D2F04BB8E005EB613 /* Frameworks */,
 				BC53CA932F04428600803ED7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +96,13 @@
 				BC53CAAB2F04428800803ED7 /* CameraTestUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BC59C87D2F04BB8E005EB613 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +125,7 @@
 			);
 			name = CameraTest;
 			packageProductDependencies = (
+				BC59C87E2F04BB8E005EB613 /* ISSoundAdditions */,
 			);
 			productName = CameraTest;
 			productReference = BC53CA922F04428600803ED7 /* CameraTest.app */;
@@ -195,6 +209,9 @@
 			);
 			mainGroup = BC53CA892F04428600803ED7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BC59C87C2F04BB79005EB613 /* XCRemoteSwiftPackageReference "ISSoundAdditions" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BC53CA932F04428600803ED7 /* Products */;
 			projectDirPath = "";
@@ -597,6 +614,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BC59C87C2F04BB79005EB613 /* XCRemoteSwiftPackageReference "ISSoundAdditions" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/InerziaSoft/ISSoundAdditions";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BC59C87E2F04BB8E005EB613 /* ISSoundAdditions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC59C87C2F04BB79005EB613 /* XCRemoteSwiftPackageReference "ISSoundAdditions" */;
+			productName = ISSoundAdditions;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BC53CA8A2F04428600803ED7 /* Project object */;
 }
