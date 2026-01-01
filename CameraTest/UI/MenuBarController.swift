@@ -14,16 +14,13 @@ class MenuBarController {
 
     func setup(with gestureController: GestureController) {
         self.gestureController = gestureController
-
-        // Create status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "hand.raised.fill", accessibilityDescription: "Gesture Control")
             button.image?.isTemplate = true
         }
-
-        // Create menu
+		
         updateMenu()
     }
 
@@ -74,15 +71,12 @@ class MenuBarController {
             gestureController?.start()
         }
 
-        // Update menu to reflect new state
         updateMenu()
     }
 
     @objc private func toggleDebugMode() {
         let currentDebugMode = gestureController?.isDebugModeEnabled() ?? false
         gestureController?.setDebugMode(!currentDebugMode)
-
-        // Update menu to reflect new state
         updateMenu()
     }
 

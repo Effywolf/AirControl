@@ -10,14 +10,10 @@ import CoreMedia
 import CoreImage
 
 class GestureController {
-
-    // Services
     private let cameraService: CameraService
     private let gestureService: GestureRecognitionService
     private let audioService: AudioControlService
     private let hudNotification = HUDNotification.shared
-
-    // State
     private(set) var isActive: Bool = false
 
     init() {

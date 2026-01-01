@@ -24,20 +24,17 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
     // Debug mode
     nonisolated(unsafe) var debugMode: Bool = false
 
-    // Gesture state tracking
     nonisolated(unsafe) private var lastGestureTime: Date?
-    nonisolated(unsafe) private var gestureCooldown: TimeInterval = 2.0 // Prevent re-triggering for 2 seconds
-    nonisolated(unsafe) private var gestureConfidenceThreshold: Float = 0.6 // Lowered from 0.8 for better detection
-
-    // Gesture confirmation tracking
+    nonisolated(unsafe) private var gestureCooldown: TimeInterval = 2.0
+    nonisolated(unsafe) private var gestureConfidenceThreshold: Float = 0.5
     nonisolated(unsafe) private var gestureHoldFrames: [HandGesture: Int] = [:]
-    private let requiredHoldFrames = 2 // Reduced from 4 for faster detection
+    private let requiredHoldFrames = 2
 
     // Swipe gesture tracking
     nonisolated(unsafe) private var handPositionHistory: [(position: CGPoint, timestamp: Date)] = []
     private let maxHistoryCount = 10
     private let swipeDistanceThreshold: CGFloat = 0.20 // 20% of screen width (more movement needed)
-    private let swipeTimeWindow: TimeInterval = 0.6 // Time window for swipe
+    private let swipeTimeWindow: TimeInterval = 0.7
 
     override init() {
         super.init()
@@ -48,7 +45,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
 
     private func setupHandPoseRequest() {
         handPoseRequest = VNDetectHumanHandPoseRequest()
-        handPoseRequest?.maximumHandCount = 1 // Only track one hand at a time
+        handPoseRequest?.maximumHandCount = 1 // track one hand at a time
     }
 
     // MARK: - Process Video Frame
@@ -80,7 +77,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return
         }
 
-        // Check cooldown period
+        // cooldown period
         if let lastTime = lastGestureTime,
            Date().timeIntervalSince(lastTime) < gestureCooldown {
             return
@@ -136,7 +133,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             print("🔍 Wrist Y: \(wrist.location.y), IndexTip Y: \(indexTip.location.y)")
         }
 
-        // Check gestures in priority order
+        // gestures in priority order
         if let swipeGesture = detectSwipe(handPoints: handPoints) {
             return swipeGesture
         }

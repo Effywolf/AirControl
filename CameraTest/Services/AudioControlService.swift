@@ -17,7 +17,6 @@ class AudioControlService {
 		return AXIsProcessTrustedWithOptions(options as CFDictionary)
 	}
 
-	// Check accessibility without prompting
 	private func hasAccessibilityPermissions() -> Bool {
 		return AXIsProcessTrusted()
 	}
@@ -98,10 +97,8 @@ class AudioControlService {
 	}
 	
 	private func sendMediaKey(keyCode: Int32) {
-		// Use NSEvent for proper media key handling
 		let data1 = Int((keyCode << 16) | (0xa << 8))
 
-		// Key down event
 		if let eventDown = NSEvent.otherEvent(
 			with: .systemDefined,
 			location: NSPoint.zero,
@@ -116,10 +113,8 @@ class AudioControlService {
 			eventDown.cgEvent?.post(tap: .cghidEventTap)
 		}
 
-		// Small delay between key down and up
 		usleep(50000)
 
-		// Key up event
 		if let eventUp = NSEvent.otherEvent(
 			with: .systemDefined,
 			location: NSPoint.zero,
