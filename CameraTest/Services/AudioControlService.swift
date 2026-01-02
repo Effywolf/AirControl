@@ -110,7 +110,7 @@ class AudioControlService {
 		let data1Down = Int((keyCode << 16) | (0xa << 8))
 		let data1Up = Int((keyCode << 16) | (0xb << 8))
 		
-		if let eventDown = NSEvent.otherEvent(
+		NSEvent.otherEvent(
 			with: .systemDefined,
 			location: .zero,
 			modifierFlags: NSEvent.ModifierFlags(rawValue: 0xa00),
@@ -120,11 +120,9 @@ class AudioControlService {
 			subtype: 8,
 			data1: data1Down,
 			data2: -1
-		) {
-			eventDown.cgEvent?.post(tap: .cghidEventTap)
-		}
+		)?.cgEvent?.post(tap: .cghidEventTap)
 		
-		if let eventUp = NSEvent.otherEvent(
+		NSEvent.otherEvent(
 			with: .systemDefined,
 			location: .zero,
 			modifierFlags: NSEvent.ModifierFlags(rawValue: 0xb00),
@@ -134,9 +132,7 @@ class AudioControlService {
 			subtype: 8,
 			data1: data1Up,
 			data2: -1
-		) {
-			eventUp.cgEvent?.post(tap: .cghidEventTap)
-		}
+		)?.cgEvent?.post(tap: .cghidEventTap)
 	}
 }
 
