@@ -2,14 +2,14 @@
 //  CalibrationWindowController.swift
 //  CameraTest
 //
-//  Created by Claude on 2026-01-01.
-//
 
 import AppKit
+import Combine
 
 class CalibrationWindowController: NSWindowController {
 
     private var coordinator: CalibrationCoordinator?
+    private var cancellables = Set<AnyCancellable>()
 
     // UI Elements
     private let titleLabel = NSTextField(labelWithString: "Gesture Calibration")
@@ -24,7 +24,7 @@ class CalibrationWindowController: NSWindowController {
 
     convenience init(gestureController: GestureController) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 500),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -36,6 +36,7 @@ class CalibrationWindowController: NSWindowController {
 
         // Ensure we retain the window controller
         self.shouldCascadeWindows = false
+        window.delegate = self
 
         // Create coordinator - ensure it's strongly retained
         let coord = CalibrationCoordinator(
@@ -46,7 +47,28 @@ class CalibrationWindowController: NSWindowController {
         self.coordinator = coord
 
         setupUI()
+        setupObservers()
         showWelcomeScreen()
+    }
+
+    private func setupObservers() {
+        guard let coordinator = coordinator else { return }
+
+        // Observe state changes
+        coordinator.$currentState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.handleStateChange(state)
+            }
+            .store(in: &cancellables)
+
+        // Observe current session changes for progress updates
+        coordinator.$currentSession
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] session in
+                self?.updateProgress(session: session)
+            }
+            .store(in: &cancellables)
     }
 
     private func setupUI() {
@@ -55,19 +77,19 @@ class CalibrationWindowController: NSWindowController {
         // Title
         titleLabel.font = NSFont.systemFont(ofSize: 20, weight: .bold)
         titleLabel.alignment = .center
-        titleLabel.frame = NSRect(x: 20, y: 340, width: 460, height: 30)
+        titleLabel.frame = NSRect(x: 20, y: 440, width: 460, height: 30)
         contentView.addSubview(titleLabel)
 
         // Instructions
         instructionLabel.font = NSFont.systemFont(ofSize: 14)
         instructionLabel.alignment = .center
         instructionLabel.maximumNumberOfLines = 0
-        instructionLabel.frame = NSRect(x: 20, y: 180, width: 460, height: 140)
+        instructionLabel.frame = NSRect(x: 20, y: 250, width: 460, height: 170)
         contentView.addSubview(instructionLabel)
 
         // Profile name field (only shown on welcome screen)
         profileNameField.placeholderString = "Profile Name (optional)"
-        profileNameField.frame = NSRect(x: 150, y: 250, width: 200, height: 24)
+        profileNameField.frame = NSRect(x: 150, y: 210, width: 200, height: 24)
         profileNameField.isHidden = true
         contentView.addSubview(profileNameField)
 
@@ -76,20 +98,20 @@ class CalibrationWindowController: NSWindowController {
         progressIndicator.minValue = 0
         progressIndicator.maxValue = 10
         progressIndicator.doubleValue = 0
-        progressIndicator.frame = NSRect(x: 100, y: 140, width: 300, height: 20)
+        progressIndicator.frame = NSRect(x: 100, y: 170, width: 300, height: 20)
         progressIndicator.isHidden = true
         contentView.addSubview(progressIndicator)
 
         // Progress label
         progressLabel.alignment = .center
-        progressLabel.frame = NSRect(x: 20, y: 110, width: 460, height: 20)
+        progressLabel.frame = NSRect(x: 20, y: 140, width: 460, height: 20)
         progressLabel.isHidden = true
         contentView.addSubview(progressLabel)
 
         // Start button (only shown on welcome screen)
         startButton.target = self
         startButton.action = #selector(startCalibrationClicked)
-        startButton.frame = NSRect(x: 200, y: 60, width: 100, height: 32)
+        startButton.frame = NSRect(x: 200, y: 90, width: 100, height: 32)
         startButton.bezelStyle = .rounded
         startButton.isHidden = true
         contentView.addSubview(startButton)
@@ -145,6 +167,9 @@ class CalibrationWindowController: NSWindowController {
         case .notStarted, .welcome:
             showWelcomeScreen()
 
+        case .transition(let gesture):
+            showTransitionScreen(for: gesture)
+
         case .calibratingGesture(let gesture):
             showCalibrationScreen(for: gesture)
 
@@ -159,18 +184,56 @@ class CalibrationWindowController: NSWindowController {
         }
     }
 
+    private func showTransitionScreen(for gesture: HandGesture) {
+        titleLabel.stringValue = "Get Ready!"
+        instructionLabel.stringValue = """
+        Next Gesture: \(gesture.rawValue)
+
+        Take a moment to relax your hand.
+
+        Starting in 3 seconds...
+
+        \(gesture.description)
+        """
+
+        profileNameField.isHidden = true
+        startButton.isHidden = true
+        progressIndicator.isHidden = true
+        progressLabel.isHidden = true
+        nextButton.isHidden = true
+        skipButton.isHidden = false
+    }
+
     private func showCalibrationScreen(for gesture: HandGesture) {
         titleLabel.stringValue = "Calibrating: \(gesture.rawValue)"
-        instructionLabel.stringValue = """
-        Perform the gesture and hold it steady.
-        The system will automatically capture samples.
 
-        Gesture: \(gesture.rawValue)
-        Action: \(gesture.description)
+        // Different instructions for swipes vs static gestures
+        let instructions: String
+        if gesture == .swipeLeft || gesture == .swipeRight {
+            instructions = """
+            Perform the swipe gesture repeatedly.
+            Move your hand naturally - don't hold steady!
 
-        Make sure your hand is visible to the camera
-        and perform the gesture naturally.
-        """
+            Gesture: \(gesture.rawValue)
+            Action: \(gesture.description)
+
+            The system will capture your movement pattern.
+            Perform the swipe 10 times at your natural speed.
+            """
+        } else {
+            instructions = """
+            Perform the gesture and hold it steady.
+            The system will automatically capture samples.
+
+            Gesture: \(gesture.rawValue)
+            Action: \(gesture.description)
+
+            Make sure your hand is visible to the camera
+            and perform the gesture naturally.
+            """
+        }
+
+        instructionLabel.stringValue = instructions
 
         profileNameField.isHidden = true
         startButton.isHidden = true
@@ -236,20 +299,17 @@ class CalibrationWindowController: NSWindowController {
 
     @objc private func startCalibrationClicked() {
         let profileName = profileNameField.stringValue.isEmpty ? "My Profile" : profileNameField.stringValue
-
-        // For now, just show a simple success message
-        let alert = NSAlert()
-        alert.messageText = "Calibration Started"
-        alert.informativeText = "Profile '\(profileName)' will be created.\n\nNote: Full calibration wizard coming soon!\nFor now, the system uses default thresholds."
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
-
-        close()
+        coordinator?.start(profileName: profileName)
+        coordinator?.beginCalibration()
     }
 
     @objc private func nextClicked() {
-        coordinator?.proceedToNext()
+        // If in review state, finish calibration instead of proceeding to next gesture
+        if coordinator?.currentState == .review {
+            coordinator?.finishCalibration()
+        } else {
+            coordinator?.proceedToNext()
+        }
     }
 
     @objc private func skipClicked() {
@@ -259,5 +319,20 @@ class CalibrationWindowController: NSWindowController {
     @objc private func cancelClicked() {
         coordinator?.cancel()
         close()
+    }
+}
+
+// MARK: - NSWindowDelegate
+
+extension CalibrationWindowController: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        // Cancel calibration if window is closed while in progress
+        if let coordinator = coordinator,
+           coordinator.currentState != .completed && coordinator.currentState != .notStarted {
+            coordinator.cancel()
+        }
+
+        // Clean up
+        cancellables.removeAll()
     }
 }

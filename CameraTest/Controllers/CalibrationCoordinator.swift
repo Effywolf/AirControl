@@ -2,8 +2,6 @@
 //  CalibrationCoordinator.swift
 //  CameraTest
 //
-//  Created by Claude on 2026-01-01.
-//
 
 import Foundation
 import Combine
@@ -13,6 +11,7 @@ import Combine
 enum CalibrationState: Equatable {
     case notStarted
     case welcome
+    case transition(HandGesture) // Pause before starting next gesture
     case calibratingGesture(HandGesture)
     case processing
     case review
@@ -120,6 +119,18 @@ class CalibrationCoordinator: ObservableObject {
         let gesture = gestureOrder[currentGestureIndex]
         currentGesture = gesture
         currentSession = sessions[gesture]
+
+        // Show transition screen first
+        currentState = .transition(gesture)
+        print("⏸️ Get ready for: \(gesture.rawValue)")
+
+        // Wait 3 seconds before starting calibration
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            self?.startCalibratingGesture(gesture)
+        }
+    }
+
+    private func startCalibratingGesture(_ gesture: HandGesture) {
         currentState = .calibratingGesture(gesture)
 
         // Enable calibration mode in gesture service
@@ -286,8 +297,9 @@ extension CalibrationCoordinator: CalibrationDelegate {
             if session.isComplete {
                 print("✅ \(sample.gesture.rawValue) calibration complete")
 
-                // Small delay before moving to next
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                // Delay before moving to next (user can relax hand)
+                // Keep calibration mode enabled to prevent gesture actions
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
                     self?.proceedToNext()
                 }
             }

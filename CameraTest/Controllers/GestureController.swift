@@ -165,6 +165,10 @@ extension GestureController: CameraServiceDelegate {
 
 extension GestureController: GestureRecognitionDelegate {
     func gestureRecognized(_ gesture: HandGesture) {
+        // Don't trigger actions during calibration
+        guard !gestureService.calibrationMode else {
+            return
+        }
         handleGesture(gesture)
     }
 }

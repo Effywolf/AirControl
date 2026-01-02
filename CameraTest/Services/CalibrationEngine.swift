@@ -2,8 +2,6 @@
 //  CalibrationEngine.swift
 //  CameraTest
 //
-//  Created by Claude on 2026-01-01.
-//
 
 import Foundation
 import CoreGraphics
@@ -86,18 +84,18 @@ class CalibrationEngine {
         if !fingerExtensions.isEmpty {
             let meanExtension = fingerExtensions.mean()
             let stdExtension = fingerExtensions.standardDeviation()
-            let threshold = max(0.05, meanExtension - (0.5 * stdExtension))
-            thresholds.palmFingerExtensionOffset = threshold
+            let threshold = meanExtension - (0.5 * stdExtension)
+            thresholds.palmFingerExtensionOffset = clamp(threshold, min: 0.01, max: 0.20)
         }
 
         if !indexMiddleSpreads.isEmpty {
             let meanSpread = indexMiddleSpreads.mean()
-            thresholds.palmFingerSpreadMinIndex = max(0.04, meanSpread * 0.7)
+            thresholds.palmFingerSpreadMinIndex = clamp(meanSpread * 0.7, min: 0.01, max: 0.15)
         }
 
         if !middleRingSpreads.isEmpty {
             let meanSpread = middleRingSpreads.mean()
-            thresholds.palmFingerSpreadMinMiddle = max(0.03, meanSpread * 0.7)
+            thresholds.palmFingerSpreadMinMiddle = clamp(meanSpread * 0.7, min: 0.01, max: 0.15)
         }
     }
 
@@ -129,13 +127,13 @@ class CalibrationEngine {
         if !thumbDeltas.isEmpty {
             let meanDelta = thumbDeltas.mean()
             let stdDelta = thumbDeltas.standardDeviation()
-            let threshold = max(0.05, meanDelta - (0.3 * stdDelta))
-            thresholds.thumbVerticalDelta = threshold
+            let threshold = meanDelta - (0.3 * stdDelta)
+            thresholds.thumbVerticalDelta = clamp(threshold, min: 0.02, max: 0.20)
         }
 
         if !thumbExtensions.isEmpty {
             let meanExtension = thumbExtensions.mean()
-            thresholds.thumbExtensionDistance = max(0.03, meanExtension * 0.8)
+            thresholds.thumbExtensionDistance = clamp(meanExtension * 0.8, min: 0.02, max: 0.20)
         }
     }
 
@@ -168,19 +166,19 @@ class CalibrationEngine {
         // Set distance threshold at 70% of average observed distance
         if !horizontalDistances.isEmpty {
             let avgDistance = horizontalDistances.mean()
-            thresholds.swipeDistanceThreshold = max(0.10, avgDistance * 0.7)
+            thresholds.swipeDistanceThreshold = clamp(avgDistance * 0.7, min: 0.05, max: 0.50)
         }
 
         // Set time window to average duration * 1.5 (allow some variation)
         if !durations.isEmpty {
             let avgDuration = durations.mean()
-            thresholds.swipeTimeWindow = min(1.0, avgDuration * 1.5)
+            thresholds.swipeTimeWindow = clamp(avgDuration * 1.5, min: 0.2, max: 2.0)
         }
 
         // Set vertical tolerance at 120% of max observed vertical movement
         if !verticalDistances.isEmpty {
             let maxVertical = verticalDistances.max() ?? 0.10
-            thresholds.swipeVerticalTolerance = max(0.08, maxVertical * 1.2)
+            thresholds.swipeVerticalTolerance = clamp(maxVertical * 1.2, min: 0.05, max: 0.30)
         }
     }
 
@@ -213,14 +211,14 @@ class CalibrationEngine {
         if !pinchDistances.isEmpty {
             let meanDistance = pinchDistances.mean()
             let stdDistance = pinchDistances.standardDeviation()
-            let threshold = min(0.08, meanDistance + (0.5 * stdDistance))
-            thresholds.pinchDistance = threshold
+            let threshold = meanDistance + (0.5 * stdDistance)
+            thresholds.pinchDistance = clamp(threshold, min: 0.01, max: 0.15)
         }
 
         // Set finger extension at 80% of observed values
         if !thumbExtensions.isEmpty && !indexExtensions.isEmpty {
             let minExtension = min(thumbExtensions.mean(), indexExtensions.mean())
-            thresholds.pinchFingerExtensionMin = max(0.02, minExtension * 0.8)
+            thresholds.pinchFingerExtensionMin = clamp(minExtension * 0.8, min: 0.01, max: 0.10)
         }
     }
 
@@ -237,7 +235,8 @@ class CalibrationEngine {
             let minConfidence = allConfidences.min() ?? 0.5
 
             // Set confidence threshold at 90% of minimum observed (to be inclusive)
-            thresholds.gestureConfidenceThreshold = max(0.3, min(0.6, minConfidence * 0.9))
+            let threshold = minConfidence * 0.9
+            thresholds.gestureConfidenceThreshold = Float(clamp(CGFloat(threshold), min: 0.1, max: 1.0))
         }
 
         // Keep other global settings at defaults (cooldown, hold frames)
@@ -245,6 +244,18 @@ class CalibrationEngine {
     }
 
     // MARK: - Helper Methods
+
+    private func clamp(_ value: CGFloat, min minValue: CGFloat, max maxValue: CGFloat) -> CGFloat {
+        return Swift.max(minValue, Swift.min(maxValue, value))
+    }
+
+    private func clamp(_ value: TimeInterval, min minValue: TimeInterval, max maxValue: TimeInterval) -> TimeInterval {
+        return Swift.max(minValue, Swift.min(maxValue, value))
+    }
+
+    private func clamp(_ value: Int, min minValue: Int, max maxValue: Int) -> Int {
+        return Swift.max(minValue, Swift.min(maxValue, value))
+    }
 
     private func distance(_ p1: CGPoint, _ p2: CGPoint) -> CGFloat {
         let dx = p2.x - p1.x

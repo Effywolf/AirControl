@@ -2,8 +2,6 @@
 //  ProfileManager.swift
 //  CameraTest
 //
-//  Created by Claude on 2026-01-01.
-//
 
 import Foundation
 
@@ -40,6 +38,9 @@ class ProfileManager {
 
     private let profilesFileName = "profiles.json"
     private let activeProfileKey = "activeProfileId"
+
+    // Serial queue for thread-safe access
+    private let queue = DispatchQueue(label: "com.cameratest.profilemanager", qos: .userInitiated)
 
     // MARK: - Initialization
 
@@ -218,15 +219,18 @@ class ProfileManager {
 
     private func saveProfiles() {
         let fileURL = storageURL.appendingPathComponent(profilesFileName)
+        let profilesToSave = profiles // Capture current state
 
-        do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            let data = try encoder.encode(profiles)
-            try data.write(to: fileURL, options: .atomic)
-        } catch {
-            print("Failed to save profiles: \(error)")
+        queue.async {
+            do {
+                let encoder = JSONEncoder()
+                encoder.dateEncodingStrategy = .iso8601
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                let data = try encoder.encode(profilesToSave)
+                try data.write(to: fileURL, options: .atomic)
+            } catch {
+                print("Failed to save profiles: \(error)")
+            }
         }
     }
 

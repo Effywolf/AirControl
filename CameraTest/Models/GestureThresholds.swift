@@ -2,8 +2,6 @@
 //  GestureThresholds.swift
 //  CameraTest
 //
-//  Created by Claude on 2026-01-01.
-//
 
 import Foundation
 import CoreGraphics
