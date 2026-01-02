@@ -16,7 +16,7 @@ class CalibrationEngine {
     func computeThresholds(from sessions: [HandGesture: CalibrationSession]) -> GestureThresholds {
         var thresholds = GestureThresholds.defaults
 
-        // Calibrate each gesture type if we have enough samples
+        // calibrate each gesture
         for (gesture, session) in sessions {
             guard session.samples.count >= 5 else {
                 print("⚠️ Insufficient samples for \(gesture.rawValue) (\(session.samples.count)/5), using defaults")
@@ -37,7 +37,7 @@ class CalibrationEngine {
             }
         }
 
-        // Global calibration from all samples
+        // global calibration from all samples
         calibrateGlobalSettings(from: sessions, thresholds: &thresholds)
 
         return thresholds

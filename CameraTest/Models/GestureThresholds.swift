@@ -1,8 +1,3 @@
-//
-//  GestureThresholds.swift
-//  CameraTest
-//
-
 import Foundation
 import CoreGraphics
 

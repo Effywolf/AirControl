@@ -1,8 +1,3 @@
-//
-//  CalibrationWindowController.swift
-//  CameraTest
-//
-
 import AppKit
 import Combine
 
@@ -10,8 +5,6 @@ class CalibrationWindowController: NSWindowController {
 
     private var coordinator: CalibrationCoordinator?
     private var cancellables = Set<AnyCancellable>()
-
-    // UI Elements
     private let titleLabel = NSTextField(labelWithString: "Gesture Calibration")
     private let instructionLabel = NSTextField(labelWithString: "")
     private let progressLabel = NSTextField(labelWithString: "0/10 samples")
@@ -33,12 +26,9 @@ class CalibrationWindowController: NSWindowController {
         window.center()
 
         self.init(window: window)
-
-        // Ensure we retain the window controller
         self.shouldCascadeWindows = false
         window.delegate = self
 
-        // Create coordinator - ensure it's strongly retained
         let coord = CalibrationCoordinator(
             gestureService: gestureController.gestureService,
             cameraService: gestureController.cameraService,
@@ -54,7 +44,6 @@ class CalibrationWindowController: NSWindowController {
     private func setupObservers() {
         guard let coordinator = coordinator else { return }
 
-        // Observe state changes
         coordinator.$currentState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
@@ -62,7 +51,6 @@ class CalibrationWindowController: NSWindowController {
             }
             .store(in: &cancellables)
 
-        // Observe current session changes for progress updates
         coordinator.$currentSession
             .receive(on: DispatchQueue.main)
             .sink { [weak self] session in
@@ -304,7 +292,7 @@ class CalibrationWindowController: NSWindowController {
     }
 
     @objc private func nextClicked() {
-        // If in review state, finish calibration instead of proceeding to next gesture
+        // if in review state, finish calibration instead of proceeding to next gesture
         if coordinator?.currentState == .review {
             coordinator?.finishCalibration()
         } else {

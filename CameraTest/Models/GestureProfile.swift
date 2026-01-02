@@ -1,8 +1,3 @@
-//
-//  GestureProfile.swift
-//  CameraTest
-//
-
 import Foundation
 
 struct GestureProfile: Codable, Identifiable, Equatable {

@@ -1,8 +1,3 @@
-//
-//  CalibrationSample.swift
-//  CameraTest
-//
-
 import Foundation
 import CoreGraphics
 import Vision

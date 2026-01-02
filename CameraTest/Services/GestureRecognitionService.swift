@@ -26,18 +26,15 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
     nonisolated(unsafe) private var handPoseRequest: VNDetectHumanHandPoseRequest?
     private let requestQueue = DispatchQueue(label: "com.cameratest.gesture.recognition")
 
-    // Profile and calibration support
     nonisolated(unsafe) private var currentThresholds: GestureThresholds = .defaults
     nonisolated(unsafe) var calibrationMode: Bool = false
     nonisolated(unsafe) var calibrationTargetGesture: HandGesture?
 
-    // Debug mode
     nonisolated(unsafe) var debugMode: Bool = false
 
     nonisolated(unsafe) private var lastGestureTime: Date?
     nonisolated(unsafe) private var gestureHoldFrames: [HandGesture: Int] = [:]
 
-    // Swipe gesture tracking
     nonisolated(unsafe) private var handPositionHistory: [(position: CGPoint, timestamp: Date)] = []
     private let maxHistoryCount = 10
 
@@ -46,16 +43,15 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         setupHandPoseRequest()
     }
 
-    // MARK: - Setup
+    // MARK: setup
 
     private func setupHandPoseRequest() {
         handPoseRequest = VNDetectHumanHandPoseRequest()
-        handPoseRequest?.maximumHandCount = 1 // track one hand at a time
+        handPoseRequest?.maximumHandCount = 1
     }
 
-    // MARK: - Profile Management
+    // MARK: profile management
 
-    /// Applies a gesture profile's thresholds to this service
     func applyProfile(_ profile: GestureProfile) {
         currentThresholds = profile.thresholds
         if debugMode {
@@ -63,12 +59,11 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         }
     }
 
-    /// Gets the currently active thresholds
     func getCurrentThresholds() -> GestureThresholds {
         return currentThresholds
     }
 
-    // MARK: - Process Video Frame
+    // MARK: process video frame
 
 	nonisolated func processVideoFrame(_ pixelBuffer: CVPixelBuffer) {
 		guard let request = handPoseRequest else {
@@ -87,48 +82,40 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
 		}
 	}
 
-    // MARK: - Handle Results
+    // MARK: handle results
 
     private func handleHandPoseResults(_ results: [VNHumanHandPoseObservation]?) {
         guard let observation = results?.first else {
-            // No hand detected - reset tracking
             handPositionHistory.removeAll()
             gestureHoldFrames.removeAll()
             return
         }
 
-        // Calibration mode: capture samples instead of recognizing gestures
         if calibrationMode {
             handleCalibrationFrame(observation)
             return
         }
 
-        // cooldown period
         if let lastTime = lastGestureTime,
            Date().timeIntervalSince(lastTime) < currentThresholds.gestureCooldown {
             return
         }
 
-        // Detect gestures
         if let gesture = detectGesture(from: observation) {
-            // Increment hold count for this gesture
             gestureHoldFrames[gesture, default: 0] += 1
 
             if debugMode {
                 print("Detected \(gesture.rawValue) - Hold frames: \(gestureHoldFrames[gesture, default: 0])/\(currentThresholds.requiredHoldFrames)")
             }
 
-            // Reset other gestures
             for key in gestureHoldFrames.keys where key != gesture {
                 gestureHoldFrames[key] = 0
             }
 
-            // Check if gesture has been held long enough
             if gestureHoldFrames[gesture, default: 0] >= currentThresholds.requiredHoldFrames {
                 lastGestureTime = Date()
                 gestureHoldFrames.removeAll()
 
-                // Clear swipe history when swipe gesture is confirmed
                 if gesture == .swipeLeft || gesture == .swipeRight {
                     handPositionHistory.removeAll()
                 }
@@ -142,24 +129,21 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
                 }
             }
         } else {
-            // No clear gesture detected, reset hold counts
             gestureHoldFrames.removeAll()
         }
     }
 
-    // MARK: - Gesture Detection
+    // MARK: gesture detection
 
     private func detectGesture(from observation: VNHumanHandPoseObservation) -> HandGesture? {
         guard let handPoints = try? observation.recognizedPoints(.all) else {
             return nil
         }
 
-        // Debug: Print coordinate info
         if debugMode, let wrist = handPoints[.wrist], let indexTip = handPoints[.indexTip] {
             print("🔍 Wrist Y: \(wrist.location.y), IndexTip Y: \(indexTip.location.y)")
         }
 
-        // gestures in priority order
         if let swipeGesture = detectSwipe(handPoints: handPoints) {
             return swipeGesture
         }
@@ -179,7 +163,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         return nil
     }
 
-    // MARK: - Open Palm Detection
+    // MARK: open palm detection
 
     private func detectOpenPalm(handPoints: [VNHumanHandPoseObservation.JointName: VNRecognizedPoint]) -> Bool {
         guard let wrist = handPoints[.wrist],
@@ -195,7 +179,6 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return false
         }
 
-        // Don't detect open palm if hand is moving horizontally (likely a swipe)
         if handPositionHistory.count >= 3 {
             let recentPositions = handPositionHistory.suffix(3)
             let firstPos = recentPositions.first!.position
@@ -210,17 +193,13 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             }
         }
 
-        // All fingertips should be extended and above the wrist
         let fingertips = [thumbTip, indexTip, middleTip, ringTip, littleTip]
 
-        // Check if all fingers are extended (tips above wrist)
-        // Vision coordinates: Y increases upward (0=bottom, 1=top)
         let allExtended = fingertips.allSatisfy { tip in
             tip.confidence > currentThresholds.gestureConfidenceThreshold &&
             tip.location.y > wrist.location.y + currentThresholds.palmFingerExtensionOffset
         }
 
-        // Check fingers are spread out (distance between adjacent fingers)
         let fingerSpread = distance(indexTip.location, middleTip.location) > currentThresholds.palmFingerSpreadMinIndex &&
                           distance(middleTip.location, ringTip.location) > currentThresholds.palmFingerSpreadMinMiddle
 
@@ -231,7 +210,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         return allExtended && fingerSpread
     }
 
-    // MARK: - Thumbs Up/Down Detection
+    // MARK: thumbs up/down detection
 
     private func detectThumbsUpDown(handPoints: [VNHumanHandPoseObservation.JointName: VNRecognizedPoint]) -> HandGesture? {
         guard let thumbTip = handPoints[.thumbTip],
@@ -244,8 +223,6 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return nil
         }
 
-        // Check if other fingers are curled (tips below MCPs = curled)
-        // Vision coordinates: Y increases upward, so curled fingers have tip.y < MCP.y
         let indexCurled = (handPoints[.indexTip]?.location.y ?? 0) < indexMCP.location.y
         let middleCurled = (handPoints[.middleTip]?.location.y ?? 0) < middleMCP.location.y
         let ringCurled = (handPoints[.ringTip]?.location.y ?? 0) < ringMCP.location.y
@@ -261,7 +238,6 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return nil
         }
 
-        // Check thumb orientation
         let thumbExtended = distance(thumbTip.location, thumbIP.location) > currentThresholds.thumbExtensionDistance
 
         if debugMode {
@@ -272,8 +248,6 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return nil
         }
 
-        // Determine if thumbs up or down based on thumb position relative to hand
-        // Vision coordinates: Y increases upward (0=bottom, 1=top)
         let averageMCPY = (indexMCP.location.y + middleMCP.location.y + ringMCP.location.y + littleMCP.location.y) / 4
         let thumbDelta = thumbTip.location.y - averageMCPY
 
@@ -281,15 +255,12 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             print("👍 Thumb Y: \(thumbTip.location.y), Avg MCP Y: \(averageMCPY), Delta: \(thumbDelta)")
         }
 
-        // Use calibrated threshold
         if thumbDelta > currentThresholds.thumbVerticalDelta {
-            // Thumb is above hand center (larger Y) = thumbs up
             if debugMode {
                 print("✅ Thumbs UP detected")
             }
             return .thumbsUp
         } else if thumbDelta < -currentThresholds.thumbVerticalDelta {
-            // Thumb is below hand center (smaller Y) = thumbs down
             if debugMode {
                 print("✅ Thumbs DOWN detected")
             }
@@ -303,7 +274,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         return nil
     }
 
-    // MARK: - Swipe Detection
+    // MARK: swipe detection
 
     private func detectSwipe(handPoints: [VNHumanHandPoseObservation.JointName: VNRecognizedPoint]) -> HandGesture? {
         guard let wrist = handPoints[.wrist],
@@ -314,32 +285,24 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         let now = Date()
         let position = wrist.location
 
-        // Add to history
         handPositionHistory.append((position: position, timestamp: now))
 
-        // Keep only recent history within time window
         handPositionHistory = handPositionHistory.filter { now.timeIntervalSince($0.timestamp) < currentThresholds.swipeTimeWindow }
 
         if handPositionHistory.count < currentThresholds.swipeMinFrames {
             return nil
         }
 
-        // Calculate horizontal movement
         let firstPosition = handPositionHistory.first!.position
         let lastPosition = handPositionHistory.last!.position
         let horizontalDistance = lastPosition.x - firstPosition.x
         let verticalDistance = abs(lastPosition.y - firstPosition.y)
 
-        // Swipe should be mostly horizontal
         if verticalDistance > currentThresholds.swipeVerticalTolerance {
-            return nil // Too much vertical movement
+            return nil
         }
 
-        // Detect swipe direction
         if abs(horizontalDistance) > currentThresholds.swipeDistanceThreshold {
-            // Don't clear history here - let it be cleared when gesture is confirmed
-            // or when hand is no longer detected
-
             if horizontalDistance > 0 {
                 return .swipeRight
             } else {
@@ -350,7 +313,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         return nil
     }
 
-    // MARK: - Pinch Detection
+    // MARK: pinch detection
 
     private func detectPinch(handPoints: [VNHumanHandPoseObservation.JointName: VNRecognizedPoint]) -> Bool {
         guard let thumbTip = handPoints[.thumbTip],
@@ -365,24 +328,20 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return false
         }
 
-        // Check if thumb and index finger tips are close together
         let pinchDistance = distance(thumbTip.location, indexTip.location)
 
-        // Also check that the fingers are actually extended toward each other
         let thumbExtended = distance(thumbTip.location, thumbIP.location) > currentThresholds.pinchFingerExtensionMin
         let indexExtended = distance(indexTip.location, indexDIP.location) > currentThresholds.pinchFingerExtensionMin
 
-        // Other fingers should be relatively curled or not extended
         let wrist = handPoints[.wrist]
         let otherFingersCurled = (middleTip.location.y < (wrist?.location.y ?? 0) + currentThresholds.pinchOtherFingersOffset) ||
                                  (ringTip.location.y < (wrist?.location.y ?? 0) + currentThresholds.pinchOtherFingersOffset) ||
                                  (littleTip.location.y < (wrist?.location.y ?? 0) + currentThresholds.pinchOtherFingersOffset)
 
-        // Use calibrated pinch distance threshold
         return pinchDistance < currentThresholds.pinchDistance && thumbExtended && indexExtended && otherFingersCurled
     }
 
-    // MARK: - Helper Functions
+    // MARK: helper functions
 
     private func distance(_ point1: CGPoint, _ point2: CGPoint) -> CGFloat {
         let dx = point1.x - point2.x
@@ -390,7 +349,7 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
         return sqrt(dx * dx + dy * dy)
     }
 
-    // MARK: - Calibration Support
+    // MARK: calibration support
 
     private func handleCalibrationFrame(_ observation: VNHumanHandPoseObservation) {
         guard let calibrationDelegate = calibrationDelegate,
@@ -398,18 +357,15 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             return
         }
 
-        // Extract all hand points
         guard let allPoints = try? observation.recognizedPoints(.all) else {
             return
         }
 
-        // Convert to CGPoint dictionary
         var handPoints: [VNHumanHandPoseObservation.JointName: CGPoint] = [:]
         for (jointName, recognizedPoint) in allPoints {
             handPoints[jointName] = recognizedPoint.location
         }
 
-        // Create calibration sample
         let sample = CalibrationSample(
             gesture: targetGesture,
             timestamp: Date(),
@@ -417,13 +373,12 @@ class GestureRecognitionService: NSObject, @unchecked Sendable {
             confidence: observation.confidence
         )
 
-        // Send to calibration delegate
         DispatchQueue.main.async {
             calibrationDelegate.didCaptureSample(sample)
         }
     }
 
-    // MARK: - Configuration (Legacy)
+    // MARK: configuration (legacy)
 
     @available(*, deprecated, message: "Use applyProfile() instead")
     func setGestureCooldown(_ cooldown: TimeInterval) {

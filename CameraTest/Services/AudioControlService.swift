@@ -14,7 +14,6 @@ class AudioControlService {
 
 	var volumeStep: Float = 0.1
 
-	// Check if accessibility permissions are granted
 	func checkAccessibilityPermissions() -> Bool {
 		let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
 		return AXIsProcessTrustedWithOptions(options as CFDictionary)

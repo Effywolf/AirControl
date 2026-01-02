@@ -1,10 +1,3 @@
-//
-//  GestureController.swift
-//  CameraTest
-//
-//  Created by Effy on 2025-12-30.
-//
-
 import Foundation
 import CoreMedia
 import CoreImage
@@ -27,7 +20,6 @@ class GestureController {
 
         setupDelegates()
 
-        // Apply active profile on startup
         let activeProfile = profileManager.getActiveProfile()
         gestureService.applyProfile(activeProfile)
         print("📝 Loaded profile: \(activeProfile.name)")
@@ -43,7 +35,7 @@ class GestureController {
     // MARK: - Control
 
     func start() {
-        // Check accessibility permissions first
+        // accessibility permissions
         if !audioService.checkAccessibilityPermissions() {
             print("⚠️ Accessibility permissions not granted. Please grant permissions in System Settings > Privacy & Security > Accessibility")
             print("⚠️ Media controls (play/pause, next/previous track) will not work without these permissions.")
@@ -86,7 +78,7 @@ class GestureController {
 
     func switchProfile(id: UUID) {
         do {
-            let profile = try profileManager.getProfile(id: id) ?? profileManager.defaultProfile
+            let profile = profileManager.getProfile(id: id) ?? profileManager.defaultProfile
             try profileManager.setActiveProfile(id: profile.id)
             gestureService.applyProfile(profile)
             print("📝 Switched to profile: \(profile.name)")
@@ -165,7 +157,7 @@ extension GestureController: CameraServiceDelegate {
 
 extension GestureController: GestureRecognitionDelegate {
     func gestureRecognized(_ gesture: HandGesture) {
-        // Don't trigger actions during calibration
+        // don't trigger actions during calibration
         guard !gestureService.calibrationMode else {
             return
         }

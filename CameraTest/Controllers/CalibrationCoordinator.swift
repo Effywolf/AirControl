@@ -1,8 +1,3 @@
-//
-//  CalibrationCoordinator.swift
-//  CameraTest
-//
-
 import Foundation
 import Combine
 
@@ -22,7 +17,8 @@ enum CalibrationState: Equatable {
 
 enum CalibrationError: Error, LocalizedError {
     case cameraNotAvailable
-    case insufficientSamples(HandGesture, Int, Int) // gesture, collected, required
+	/// gesture, collected, required
+    case insufficientSamples(HandGesture, Int, Int)
     case invalidThresholds
     case saveFailed(Error)
 
@@ -65,8 +61,6 @@ class CalibrationCoordinator: ObservableObject {
     private var currentGestureIndex: Int = 0
     private var computedThresholds: GestureThresholds?
     private var savedProfile: GestureProfile?
-
-    // Configuration
     private let samplesPerGesture: Int
     private let minimumConfidence: Float
 
@@ -86,7 +80,6 @@ class CalibrationCoordinator: ObservableObject {
         self.samplesPerGesture = samplesPerGesture
         self.minimumConfidence = minimumConfidence
 
-        // Initialize sessions for all gestures
         for gesture in gestureOrder {
             sessions[gesture] = CalibrationSession(
                 gesture: gesture,
@@ -104,14 +97,14 @@ class CalibrationCoordinator: ObservableObject {
     }
 
     func beginCalibration() {
-        // Start with first gesture
+        // first gesture
         currentGestureIndex = 0
         moveToNextGesture()
     }
 
     func moveToNextGesture() {
         guard currentGestureIndex < gestureOrder.count else {
-            // All gestures calibrated, move to processing
+            // gestures calibrated, move to processing
             processCalibrationData()
             return
         }
@@ -120,11 +113,11 @@ class CalibrationCoordinator: ObservableObject {
         currentGesture = gesture
         currentSession = sessions[gesture]
 
-        // Show transition screen first
+        // transition screen
         currentState = .transition(gesture)
         print("⏸️ Get ready for: \(gesture.rawValue)")
 
-        // Wait 3 seconds before starting calibration
+        // wait 3 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             self?.startCalibratingGesture(gesture)
         }
@@ -133,7 +126,7 @@ class CalibrationCoordinator: ObservableObject {
     private func startCalibratingGesture(_ gesture: HandGesture) {
         currentState = .calibratingGesture(gesture)
 
-        // Enable calibration mode in gesture service
+        // enable calibration mode in gesture service
         gestureService.calibrationMode = true
         gestureService.calibrationTargetGesture = gesture
         gestureService.calibrationDelegate = self
@@ -148,12 +141,10 @@ class CalibrationCoordinator: ObservableObject {
     }
 
     func recalibrateGesture(_ gesture: HandGesture) {
-        // Reset session for this gesture
         if let session = sessions[gesture] {
             session.reset()
         }
 
-        // Find gesture index
         if let index = gestureOrder.firstIndex(of: gesture) {
             currentGestureIndex = index
             moveToNextGesture()
@@ -161,7 +152,7 @@ class CalibrationCoordinator: ObservableObject {
     }
 
     func finishCalibration() {
-        // Disable calibration mode
+        // disable calibration mode
         gestureService.calibrationMode = false
         gestureService.calibrationTargetGesture = nil
         gestureService.calibrationDelegate = nil
@@ -171,12 +162,12 @@ class CalibrationCoordinator: ObservableObject {
     }
 
     func cancel() {
-        // Disable calibration mode
+        // disable calibration mode
         gestureService.calibrationMode = false
         gestureService.calibrationTargetGesture = nil
         gestureService.calibrationDelegate = nil
 
-        // Reset all sessions
+        // reset all sessions
         for session in sessions.values {
             session.reset()
         }
@@ -191,11 +182,11 @@ class CalibrationCoordinator: ObservableObject {
         currentState = .processing
         print("🔄 Processing calibration data...")
 
-        // Disable calibration mode
+        // disable calibration mode
         gestureService.calibrationMode = false
         gestureService.calibrationTargetGesture = nil
 
-        // Compute thresholds on background queue
+        // compute thresholds on background queue
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
 
@@ -224,7 +215,6 @@ class CalibrationCoordinator: ObservableObject {
             savedProfile = profile
             print("💾 Profile saved: \(profile.name)")
 
-            // Optionally set as active profile
             try profileManager.setActiveProfile(id: profile.id)
             print("📝 Profile set as active")
 
@@ -288,17 +278,14 @@ extension CalibrationCoordinator: CalibrationDelegate {
         if added {
             print("📸 Sample captured for \(sample.gesture.rawValue): \(session.samples.count)/\(session.requiredSamples)")
 
-            // Update current session to trigger UI refresh
+            // update current session to trigger UI refresh
             DispatchQueue.main.async { [weak self] in
                 self?.currentSession = session
             }
 
-            // Auto-advance when enough samples collected
             if session.isComplete {
                 print("✅ \(sample.gesture.rawValue) calibration complete")
 
-                // Delay before moving to next (user can relax hand)
-                // Keep calibration mode enabled to prevent gesture actions
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
                     self?.proceedToNext()
                 }

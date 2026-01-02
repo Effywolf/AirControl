@@ -1,10 +1,3 @@
-//
-//  HandGesture.swift
-//  CameraTest
-//
-//  Created by Effy on 2025-12-30.
-//
-
 import Foundation
 
 enum HandGesture: String, CaseIterable, Codable {

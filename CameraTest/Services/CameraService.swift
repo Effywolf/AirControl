@@ -1,10 +1,3 @@
-//
-//  CameraService.swift
-//  CameraTest
-//
-//  Created by Effy on 2025-12-30.
-//
-
 import AVFoundation
 import Combine
 import CoreImage
@@ -35,7 +28,7 @@ class CameraService: NSObject, @unchecked Sendable {
         super.init()
     }
 
-    // MARK: - Permission Handling
+    // MARK: permission handling
 
     func requestCameraPermission(completion: @escaping (Bool) -> Void) {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -54,7 +47,7 @@ class CameraService: NSObject, @unchecked Sendable {
         }
     }
 
-    // MARK: - Session Configuration
+    // MARK: session configuration
 
     func setupCaptureSession() throws {
         guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
@@ -70,22 +63,18 @@ class CameraService: NSObject, @unchecked Sendable {
 
             self.captureSession.beginConfiguration()
 
-            // Set session preset for optimal hand tracking (640x480 @ 30fps)
             if self.captureSession.canSetSessionPreset(.vga640x480) {
                 self.captureSession.sessionPreset = .vga640x480
             }
 
-            // Add input
             if self.captureSession.canAddInput(input) {
                 self.captureSession.addInput(input)
             }
 
-            // Configure video output
             let videoOutput = AVCaptureVideoDataOutput()
             videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.cameratest.camera.output"))
             videoOutput.alwaysDiscardsLateVideoFrames = true
 
-            // Set pixel format for Vision framework compatibility
             videoOutput.videoSettings = [
                 kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
             ]
@@ -95,7 +84,6 @@ class CameraService: NSObject, @unchecked Sendable {
                 self.videoDataOutput = videoOutput
             }
 
-            // Set frame rate to 30fps
             if let connection = videoOutput.connection(with: .video) {
                 if connection.isVideoMirroringSupported {
                     connection.isVideoMirrored = true
@@ -106,7 +94,7 @@ class CameraService: NSObject, @unchecked Sendable {
         }
     }
 
-    // MARK: - Session Control
+    // MARK: session control
 
     func startCapture() {
         sessionQueue.async { [weak self] in
@@ -129,7 +117,7 @@ class CameraService: NSObject, @unchecked Sendable {
     }
 }
 
-// MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
+// MARK: avcapturevideodataoutputsamplebufferdelegate
 
 extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
 	nonisolated func captureOutput(_ output: AVCaptureOutput,

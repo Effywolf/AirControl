@@ -1,10 +1,3 @@
-//
-//  HUDNotification.swift
-//  CameraTest
-//
-//  Created by Effy on 2025-12-30.
-//
-
 import AppKit
 import SwiftUI
 
