@@ -15,6 +15,8 @@ class GestureController {
     private let audioService: AudioControlService
     private let hudNotification = HUDNotification.shared
     private(set) var isActive: Bool = false
+	private var lastGestureTime: [HandGesture: Date] = [:]
+	private let debounceInterval: TimeInterval = 0.5
 
     init() {
         self.cameraService = CameraService()
@@ -76,6 +78,12 @@ class GestureController {
     // MARK: - Gesture Handling
 
 	private func handleGesture(_ gesture: HandGesture) {
+		let now = Date()
+		if let lastTime = lastGestureTime[gesture],
+		   now.timeIntervalSince(lastTime) < debounceInterval {
+			return
+		}
+		lastGestureTime[gesture] = now
 		print("Gesture recognized: \(gesture.rawValue)")
 		
 		switch gesture {

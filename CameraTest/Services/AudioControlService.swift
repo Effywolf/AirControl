@@ -4,6 +4,9 @@ import ISSoundAdditions
 
 class AudioControlService {
 
+	private var lastMediaKeyTime: [Int32: Date] = [:]
+	private let debounceInterval: TimeInterval = 0.3
+	
 	enum TrackDirection {
 		case forward
 		case backward
@@ -97,33 +100,39 @@ class AudioControlService {
 	}
 	
 	private func sendMediaKey(keyCode: Int32) {
-		let data1 = Int((keyCode << 16) | (0xa << 8))
-
+		let now = Date()
+		if let lastTime = lastMediaKeyTime[keyCode],
+		   now.timeIntervalSince(lastTime) < debounceInterval {
+			return
+		}
+		lastMediaKeyTime[keyCode] = now
+		
+		let data1Down = Int((keyCode << 16) | (0xa << 8))
+		let data1Up = Int((keyCode << 16) | (0xb << 8))
+		
 		if let eventDown = NSEvent.otherEvent(
 			with: .systemDefined,
-			location: NSPoint.zero,
+			location: .zero,
 			modifierFlags: NSEvent.ModifierFlags(rawValue: 0xa00),
 			timestamp: 0,
 			windowNumber: 0,
 			context: nil,
 			subtype: 8,
-			data1: data1,
+			data1: data1Down,
 			data2: -1
 		) {
 			eventDown.cgEvent?.post(tap: .cghidEventTap)
 		}
-
-		usleep(50000)
-
+		
 		if let eventUp = NSEvent.otherEvent(
 			with: .systemDefined,
-			location: NSPoint.zero,
+			location: .zero,
 			modifierFlags: NSEvent.ModifierFlags(rawValue: 0xb00),
 			timestamp: 0,
 			windowNumber: 0,
 			context: nil,
 			subtype: 8,
-			data1: data1,
+			data1: data1Up,
 			data2: -1
 		) {
 			eventUp.cgEvent?.post(tap: .cghidEventTap)
