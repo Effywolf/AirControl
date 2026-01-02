@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC3785252F07580D007EA03A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BC3785232F075807007EA03A /* README.md */; };
 		BC59C87F2F04BB8E005EB613 /* ISSoundAdditions in Frameworks */ = {isa = PBXBuildFile; productRef = BC59C87E2F04BB8E005EB613 /* ISSoundAdditions */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BC3785232F075807007EA03A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		BC53CA922F04428600803ED7 /* AirControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AirControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC53CAA12F04428800803ED7 /* AirControlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirControlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC53CAAB2F04428800803ED7 /* AirControlUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirControlUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,6 +87,7 @@
 				BC53CAAE2F04428800803ED7 /* CameraTestUITests */,
 				BC59C87D2F04BB8E005EB613 /* Frameworks */,
 				BC53CA932F04428600803ED7 /* Products */,
+				BC3785232F075807007EA03A /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -229,6 +232,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC3785252F07580D007EA03A /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
