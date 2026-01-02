@@ -28,9 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BC53CA922F04428600803ED7 /* CameraTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BC53CAA12F04428800803ED7 /* CameraTestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraTestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BC53CAAB2F04428800803ED7 /* CameraTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraTestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC53CA922F04428600803ED7 /* AirControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AirControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC53CAA12F04428800803ED7 /* AirControlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirControlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC53CAAB2F04428800803ED7 /* AirControlUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirControlUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -91,9 +91,9 @@
 		BC53CA932F04428600803ED7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BC53CA922F04428600803ED7 /* CameraTest.app */,
-				BC53CAA12F04428800803ED7 /* CameraTestTests.xctest */,
-				BC53CAAB2F04428800803ED7 /* CameraTestUITests.xctest */,
+				BC53CA922F04428600803ED7 /* AirControl.app */,
+				BC53CAA12F04428800803ED7 /* AirControlTests.xctest */,
+				BC53CAAB2F04428800803ED7 /* AirControlUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,9 +108,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BC53CA912F04428600803ED7 /* CameraTest */ = {
+		BC53CA912F04428600803ED7 /* AirControl */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BC53CAB52F04428800803ED7 /* Build configuration list for PBXNativeTarget "CameraTest" */;
+			buildConfigurationList = BC53CAB52F04428800803ED7 /* Build configuration list for PBXNativeTarget "AirControl" */;
 			buildPhases = (
 				BC53CA8E2F04428600803ED7 /* Sources */,
 				BC53CA8F2F04428600803ED7 /* Frameworks */,
@@ -123,17 +123,17 @@
 			fileSystemSynchronizedGroups = (
 				BC53CA942F04428600803ED7 /* CameraTest */,
 			);
-			name = CameraTest;
+			name = AirControl;
 			packageProductDependencies = (
 				BC59C87E2F04BB8E005EB613 /* ISSoundAdditions */,
 			);
 			productName = CameraTest;
-			productReference = BC53CA922F04428600803ED7 /* CameraTest.app */;
+			productReference = BC53CA922F04428600803ED7 /* AirControl.app */;
 			productType = "com.apple.product-type.application";
 		};
-		BC53CAA02F04428800803ED7 /* CameraTestTests */ = {
+		BC53CAA02F04428800803ED7 /* AirControlTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BC53CAB82F04428800803ED7 /* Build configuration list for PBXNativeTarget "CameraTestTests" */;
+			buildConfigurationList = BC53CAB82F04428800803ED7 /* Build configuration list for PBXNativeTarget "AirControlTests" */;
 			buildPhases = (
 				BC53CA9D2F04428800803ED7 /* Sources */,
 				BC53CA9E2F04428800803ED7 /* Frameworks */,
@@ -147,16 +147,16 @@
 			fileSystemSynchronizedGroups = (
 				BC53CAA42F04428800803ED7 /* CameraTestTests */,
 			);
-			name = CameraTestTests;
+			name = AirControlTests;
 			packageProductDependencies = (
 			);
 			productName = CameraTestTests;
-			productReference = BC53CAA12F04428800803ED7 /* CameraTestTests.xctest */;
+			productReference = BC53CAA12F04428800803ED7 /* AirControlTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		BC53CAAA2F04428800803ED7 /* CameraTestUITests */ = {
+		BC53CAAA2F04428800803ED7 /* AirControlUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BC53CABB2F04428800803ED7 /* Build configuration list for PBXNativeTarget "CameraTestUITests" */;
+			buildConfigurationList = BC53CABB2F04428800803ED7 /* Build configuration list for PBXNativeTarget "AirControlUITests" */;
 			buildPhases = (
 				BC53CAA72F04428800803ED7 /* Sources */,
 				BC53CAA82F04428800803ED7 /* Frameworks */,
@@ -170,11 +170,11 @@
 			fileSystemSynchronizedGroups = (
 				BC53CAAE2F04428800803ED7 /* CameraTestUITests */,
 			);
-			name = CameraTestUITests;
+			name = AirControlUITests;
 			packageProductDependencies = (
 			);
 			productName = CameraTestUITests;
-			productReference = BC53CAAB2F04428800803ED7 /* CameraTestUITests.xctest */;
+			productReference = BC53CAAB2F04428800803ED7 /* AirControlUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -200,7 +200,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BC53CA8D2F04428600803ED7 /* Build configuration list for PBXProject "CameraTest" */;
+			buildConfigurationList = BC53CA8D2F04428600803ED7 /* Build configuration list for PBXProject "AirControl" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -217,9 +217,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BC53CA912F04428600803ED7 /* CameraTest */,
-				BC53CAA02F04428800803ED7 /* CameraTestTests */,
-				BC53CAAA2F04428800803ED7 /* CameraTestUITests */,
+				BC53CA912F04428600803ED7 /* AirControl */,
+				BC53CAA02F04428800803ED7 /* AirControlTests */,
+				BC53CAAA2F04428800803ED7 /* AirControlUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -275,12 +275,12 @@
 /* Begin PBXTargetDependency section */
 		BC53CAA32F04428800803ED7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = BC53CA912F04428600803ED7 /* CameraTest */;
+			target = BC53CA912F04428600803ED7 /* AirControl */;
 			targetProxy = BC53CAA22F04428800803ED7 /* PBXContainerItemProxy */;
 		};
 		BC53CAAD2F04428800803ED7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = BC53CA912F04428600803ED7 /* CameraTest */;
+			target = BC53CA912F04428600803ED7 /* AirControl */;
 			targetProxy = BC53CAAC2F04428800803ED7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -511,7 +511,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CameraTest.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CameraTest";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AirControl.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AirControl";
 			};
 			name = Debug;
 		};
@@ -532,7 +532,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CameraTest.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CameraTest";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AirControl.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AirControl";
 			};
 			name = Release;
 		};
@@ -577,7 +577,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BC53CA8D2F04428600803ED7 /* Build configuration list for PBXProject "CameraTest" */ = {
+		BC53CA8D2F04428600803ED7 /* Build configuration list for PBXProject "AirControl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BC53CAB32F04428800803ED7 /* Debug */,
@@ -586,7 +586,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BC53CAB52F04428800803ED7 /* Build configuration list for PBXNativeTarget "CameraTest" */ = {
+		BC53CAB52F04428800803ED7 /* Build configuration list for PBXNativeTarget "AirControl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BC53CAB62F04428800803ED7 /* Debug */,
@@ -595,7 +595,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BC53CAB82F04428800803ED7 /* Build configuration list for PBXNativeTarget "CameraTestTests" */ = {
+		BC53CAB82F04428800803ED7 /* Build configuration list for PBXNativeTarget "AirControlTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BC53CAB92F04428800803ED7 /* Debug */,
@@ -604,7 +604,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BC53CABB2F04428800803ED7 /* Build configuration list for PBXNativeTarget "CameraTestUITests" */ = {
+		BC53CABB2F04428800803ED7 /* Build configuration list for PBXNativeTarget "AirControlUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BC53CABC2F04428800803ED7 /* Debug */,

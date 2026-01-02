@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC53CA912F04428600803ED7"
-               BuildableName = "CameraTest.app"
-               BlueprintName = "CameraTest"
-               ReferencedContainer = "container:CameraTest.xcodeproj">
+               BuildableName = "AirControl.app"
+               BlueprintName = "AirControl"
+               ReferencedContainer = "container:AirControl.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -36,9 +36,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC53CAA02F04428800803ED7"
-               BuildableName = "CameraTestTests.xctest"
-               BlueprintName = "CameraTestTests"
-               ReferencedContainer = "container:CameraTest.xcodeproj">
+               BuildableName = "AirControlTests.xctest"
+               BlueprintName = "AirControlTests"
+               ReferencedContainer = "container:AirControl.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC53CAAA2F04428800803ED7"
-               BuildableName = "CameraTestUITests.xctest"
-               BlueprintName = "CameraTestUITests"
-               ReferencedContainer = "container:CameraTest.xcodeproj">
+               BuildableName = "AirControlUITests.xctest"
+               BlueprintName = "AirControlUITests"
+               ReferencedContainer = "container:AirControl.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,9 +71,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC53CA912F04428600803ED7"
-            BuildableName = "CameraTest.app"
-            BlueprintName = "CameraTest"
-            ReferencedContainer = "container:CameraTest.xcodeproj">
+            BuildableName = "AirControl.app"
+            BlueprintName = "AirControl"
+            ReferencedContainer = "container:AirControl.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -95,9 +95,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC53CA912F04428600803ED7"
-            BuildableName = "CameraTest.app"
-            BlueprintName = "CameraTest"
-            ReferencedContainer = "container:CameraTest.xcodeproj">
+            BuildableName = "AirControl.app"
+            BlueprintName = "AirControl"
+            ReferencedContainer = "container:AirControl.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
