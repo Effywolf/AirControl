@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum HandGesture: String, CaseIterable {
+enum HandGesture: String, CaseIterable, Codable {
     case openPalm = "Open Palm"
     case thumbsUp = "Thumbs Up"
     case thumbsDown = "Thumbs Down"

@@ -11,27 +11,36 @@ class MenuBarController {
 
     private var statusItem: NSStatusItem?
     private var gestureController: GestureController?
+    private var calibrationWindowController: CalibrationWindowController?
 
     func setup(with gestureController: GestureController) {
+        print("🟢 MenuBarController.setup() called")
         self.gestureController = gestureController
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        print("🟢 StatusItem created: \(String(describing: statusItem))")
 
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "hand.raised.fill", accessibilityDescription: "Gesture Control")
             button.image?.isTemplate = true
+            print("🟢 Menu bar icon set")
+        } else {
+            print("❌ Failed to get statusItem button")
         }
-		
+
         updateMenu()
+        print("🟢 Menu updated and attached")
     }
 
     private func updateMenu() {
+        print("🔵 updateMenu() started")
         let menu = NSMenu()
 
-        // Status item
+        // Status menu item (renamed to avoid conflict with statusItem property)
         let statusTitle = gestureController?.isActive == true ? "Gesture Control: On" : "Gesture Control: Off"
-        let statusItem = NSMenuItem(title: statusTitle, action: nil, keyEquivalent: "")
-        statusItem.isEnabled = false
-        menu.addItem(statusItem)
+        let statusMenuItem = NSMenuItem(title: statusTitle, action: nil, keyEquivalent: "")
+        statusMenuItem.isEnabled = false
+        menu.addItem(statusMenuItem)
+        print("🔵 Added status item")
 
         menu.addItem(NSMenuItem.separator())
 
@@ -40,6 +49,46 @@ class MenuBarController {
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleGestureControl), keyEquivalent: "")
         toggleItem.target = self
         menu.addItem(toggleItem)
+        print("🔵 Added toggle item")
+
+        menu.addItem(NSMenuItem.separator())
+
+        // Calibration menu
+        print("🔵 Creating calibration menu item...")
+        let calibrateItem = NSMenuItem(title: "Calibrate Gestures...", action: #selector(startCalibration), keyEquivalent: "")
+        calibrateItem.target = self
+        menu.addItem(calibrateItem)
+        print("🔵 Added calibration item")
+
+        // Profile switcher submenu
+        print("🔵 Creating profiles submenu...")
+        let profilesMenu = NSMenu()
+        if let currentProfile = gestureController?.getActiveProfile(),
+           let allProfiles = gestureController?.getAllProfiles() {
+            print("🔵 Found \(allProfiles.count) profiles")
+
+            for profile in allProfiles {
+                let profileItem = NSMenuItem(title: profile.name, action: #selector(switchProfile(_:)), keyEquivalent: "")
+                profileItem.target = self
+                // Store UUID as string to avoid Objective-C bridging issues
+                profileItem.representedObject = profile.id.uuidString
+
+                // Checkmark for active profile
+                if profile.id == currentProfile.id {
+                    profileItem.state = .on
+                }
+
+                profilesMenu.addItem(profileItem)
+                print("🔵 Added profile: \(profile.name)")
+            }
+        } else {
+            print("❌ Could not get profiles")
+        }
+
+        let profilesMenuItem = NSMenuItem(title: "Profiles", action: nil, keyEquivalent: "")
+        profilesMenuItem.submenu = profilesMenu
+        menu.addItem(profilesMenuItem)
+        print("🔵 Added profiles menu")
 
         menu.addItem(NSMenuItem.separator())
 
@@ -60,8 +109,12 @@ class MenuBarController {
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
+        print("🔵 Added quit item")
 
-		statusItem.menu = menu
+        print("🔵 Setting menu on statusItem: \(String(describing: statusItem))")
+        print("🔵 Menu has \(menu.items.count) items")
+		statusItem!.menu = menu
+        print("🔵 updateMenu() completed")
     }
 
     @objc private func toggleGestureControl() {
@@ -78,6 +131,43 @@ class MenuBarController {
         let currentDebugMode = gestureController?.isDebugModeEnabled() ?? false
         gestureController?.setDebugMode(!currentDebugMode)
         updateMenu()
+    }
+
+    @objc private func startCalibration() {
+        print("🔵 startCalibration called")
+        guard let gestureController = gestureController else {
+            print("❌ gestureController is nil")
+            return
+        }
+
+        print("🔵 Creating CalibrationWindowController")
+        // Create and show calibration window
+        calibrationWindowController = CalibrationWindowController(gestureController: gestureController)
+
+        print("🔵 Showing window: \(String(describing: calibrationWindowController?.window))")
+        calibrationWindowController?.showWindow(nil)
+        calibrationWindowController?.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        print("🔵 Window should be visible now")
+    }
+
+    @objc private func switchProfile(_ sender: NSMenuItem) {
+        guard let uuidString = sender.representedObject as? String,
+              let profileId = UUID(uuidString: uuidString) else {
+            print("⚠️ Invalid profile ID")
+            return
+        }
+
+        gestureController?.switchProfile(id: profileId)
+        updateMenu()
+
+        // Show confirmation
+        if let profileName = gestureController?.getActiveProfile().name {
+            let notification = NSUserNotification()
+            notification.title = "Profile Switched"
+            notification.informativeText = "Now using profile: \(profileName)"
+            NSUserNotificationCenter.default.deliver(notification)
+        }
     }
 
     @objc private func showAbout() {

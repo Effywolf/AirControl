@@ -10,9 +10,10 @@ import CoreMedia
 import CoreImage
 
 class GestureController {
-    private let cameraService: CameraService
-    private let gestureService: GestureRecognitionService
+    let cameraService: CameraService
+    let gestureService: GestureRecognitionService
     private let audioService: AudioControlService
+    private let profileManager: ProfileManager
     private let hudNotification = HUDNotification.shared
     private(set) var isActive: Bool = false
 	private var lastGestureTime: [HandGesture: Date] = [:]
@@ -22,8 +23,14 @@ class GestureController {
         self.cameraService = CameraService()
         self.gestureService = GestureRecognitionService()
         self.audioService = AudioControlService()
+        self.profileManager = ProfileManager()
 
         setupDelegates()
+
+        // Apply active profile on startup
+        let activeProfile = profileManager.getActiveProfile()
+        gestureService.applyProfile(activeProfile)
+        print("📝 Loaded profile: \(activeProfile.name)")
     }
 
     // MARK: - Setup
@@ -73,6 +80,31 @@ class GestureController {
 
     func isDebugModeEnabled() -> Bool {
         return gestureService.debugMode
+    }
+
+    // MARK: - Profile Management
+
+    func switchProfile(id: UUID) {
+        do {
+            let profile = try profileManager.getProfile(id: id) ?? profileManager.defaultProfile
+            try profileManager.setActiveProfile(id: profile.id)
+            gestureService.applyProfile(profile)
+            print("📝 Switched to profile: \(profile.name)")
+        } catch {
+            print("❌ Failed to switch profile: \(error)")
+        }
+    }
+
+    func getActiveProfile() -> GestureProfile {
+        return profileManager.getActiveProfile()
+    }
+
+    func getAllProfiles() -> [GestureProfile] {
+        return profileManager.getAllProfiles()
+    }
+
+    func getProfileManager() -> ProfileManager {
+        return profileManager
     }
 
     // MARK: - Gesture Handling
