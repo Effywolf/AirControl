@@ -12,7 +12,7 @@ AirControl allows you to control music playback using hand gestures captured thr
 * Camera based hand tracking
 * Intuitive gesture controls for play, pause, skip, and volume
 
-## How It Works
+## Overview
 
 The app uses your device camera to detect hand gestures in real time. These gestures are translated into music control commands, allowing you to control playback without touching your device.
 
